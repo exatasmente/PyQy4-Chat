@@ -35,20 +35,40 @@ class Ui_ListaCanais(object):
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.verticalLayout_2 = QtGui.QVBoxLayout(self.centralwidget)
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
+        self.verticalLayout_3 = QtGui.QVBoxLayout()
+        self.verticalLayout_3.setObjectName(_fromUtf8("verticalLayout_3"))
+        self.horizontalLayout_2 = QtGui.QHBoxLayout()
+        self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
         self.nomeCliente = QtGui.QLabel(self.centralwidget)
+        self.nomeCliente.setMaximumSize(QtCore.QSize(100, 40))
         self.nomeCliente.setObjectName(_fromUtf8("nomeCliente"))
-        self.verticalLayout_2.addWidget(self.nomeCliente)
+        self.horizontalLayout_2.addWidget(self.nomeCliente)
+        self.frame = QtGui.QFrame(self.centralwidget)
+
+        self.frame.setMaximumHeight(120)
+        self.frame.setStyleSheet(_fromUtf8("QFrame{\n"
+                                           " border: 2px solid rgb(85, 0, 255);\n"
+                                           " background-image : url(\"/root/PycharmProjects/ClientChatGUI/View/1.png\");\n"
+                                           " background-repeat: no-repeat;\n "
+
+                                           "}"))
+        self.frame.setFrameShape(QtGui.QFrame.NoFrame)
+        self.frame.setFrameShadow(QtGui.QFrame.Plain)
+        self.frame.setObjectName(_fromUtf8("frame"))
+        self.horizontalLayout_2.addWidget(self.frame)
+        self.verticalLayout_3.addLayout(self.horizontalLayout_2)
         self.criarCanalBtn = QtGui.QPushButton(self.centralwidget)
-        self.criarCanalBtn.setObjectName(_fromUtf8("pushButton"))
-        self.verticalLayout_2.addWidget(self.criarCanalBtn)
+        self.criarCanalBtn.setObjectName(_fromUtf8("criarCanalBtn"))
+        self.verticalLayout_3.addWidget(self.criarCanalBtn)
+        self.verticalLayout_2.addLayout(self.verticalLayout_3)
         self.scrollArea = QtGui.QScrollArea(self.centralwidget)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.scrollArea.sizePolicy().hasHeightForWidth())
         self.scrollArea.setSizePolicy(sizePolicy)
-        self.scrollArea.setMinimumSize(QtCore.QSize(198, 300))
-        self.scrollArea.setMaximumSize(QtCore.QSize(198, 400))
+        self.scrollArea.setMinimumSize(QtCore.QSize(198, 270))
+        self.scrollArea.setMaximumSize(QtCore.QSize(198, 300))
         self.scrollArea.setFrameShape(QtGui.QFrame.Panel)
         self.scrollArea.setFrameShadow(QtGui.QFrame.Sunken)
         self.scrollArea.setLineWidth(0)
@@ -67,6 +87,6 @@ class Ui_ListaCanais(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("Lista de Canais", "Lista de Canais", None))
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
         self.nomeCliente.setText(_translate("MainWindow", "Nome Cliente", None))
         self.criarCanalBtn.setText(_translate("MainWindow", "Criar Canal", None))

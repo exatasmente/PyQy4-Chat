@@ -30,8 +30,8 @@ class Window(QMainWindow, GUI.Ui_MainWindow):
             COM = False
             loop = asyncio.get_event_loop()
             COM = loop.run_until_complete(cliente.connect())
-            loop.close()
-            print(COM)
+
+
             if COM:
 
                 win = ListaCanais.ListaCanais(cliente, self)

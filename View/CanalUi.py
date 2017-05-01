@@ -50,14 +50,19 @@ class Canal(QtGui.QMainWindow,Ui_Canal):
         MsgWidget = QtGui.QWidget(self.scrollAreaWidgetContents)
         MsgWidget.setMinimumSize(QtCore.QSize(401, 40))
         MsgWidget.setMaximumSize(QtCore.QSize(401, 40))
-
-        palette = QtGui.QPalette()
         if nome:
-            palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.ToolTipText, self.getbrush(palette,True))
+            MsgWidget.setStyleSheet(_fromUtf8("QWidget{\n"
+                                               "color : #ffffff;\n"
+                                               "border-radius: 10px;\n"
+                                               "background: rgb(110, 110, 255);\n"
+                                               "}"))
         else:
-            palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.ToolTipText, self.getbrush(palette))
-        MsgWidget.setPalette(palette)
-        MsgWidget.setAutoFillBackground(True)
+            MsgWidget.setStyleSheet(_fromUtf8("QWidget{\n"
+                                              "color : #ffffff;\n"
+                                              "border-radius: 10px;\n"
+                                              "background: rgb(85, 0, 255);\n"
+                                              "}"))
+
         MsgWidget.setObjectName(_fromUtf8("MsgWidget"))
 
 

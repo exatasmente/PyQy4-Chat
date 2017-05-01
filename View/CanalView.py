@@ -52,6 +52,12 @@ class Ui_Canal(object):
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.textEdit = QtGui.QLineEdit(self.centralwidget)
         self.textEdit.setGeometry(QtCore.QRect(10, 209, 381, 51))
+        self.textEdit.setStyleSheet(_fromUtf8("QLineEdit{\n"
+                                              "border-radius: 10px;\n"
+                                              "border-style: solid;\n"
+                                              "border-width:2px;\n"
+                                              "border-color : rgb(0, 0, 0)\n"
+                                              "}"))
         self.textEdit.setObjectName(_fromUtf8("textEdit"))
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)

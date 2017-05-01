@@ -10,9 +10,6 @@ class Cliente:
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-    def prompt(self):
-        sys.stdout.write('')
-        sys.stdout.flush()
 
     def getData(self, s):
         try:
@@ -30,15 +27,14 @@ class Cliente:
         sys.exit()
 
     async def connect(self):
-        try:
-            self.socket.connect((self.host, self.port))
-            self.socket.send(self.name.encode())
+          Con = self.socket.connect_ex((self.host, self.port))
 
-        except:
-            return False
+          if Con == 0:
+              self.socket.send(self.name.encode())
+              return True
+          else:
+              return False
 
-
-        return True
 
     def post(self, msg):
         print(msg)
