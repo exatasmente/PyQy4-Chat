@@ -1,7 +1,14 @@
+import asyncio
 from PyQt4 import QtGui, QtCore
+
+
+from PyQt4.QtCore import QThreadPool
+
+
 from Controller import  CanalThread
 from Controller.CanalThread import CanalThead
 from View import CanalUi
+from View.CriarCanal import CriarCanal
 from View.ListaCanaisUi import Ui_ListaCanais
 
 
@@ -32,76 +39,75 @@ class ListaCanais(QtGui.QMainWindow,Ui_ListaCanais):
         self.cliente = cliente
         super(ListaCanais, self).__init__(parent)
         self.parentApp = parentApp
-
+        self.windows = list()
         self.setupUi(self)
 
-        self.worker = CanalThread.CanalThead(cliente)
-        self.worker_thread = QtCore.QThread()
-        self.worker.moveToThread(self.worker_thread)
-        self.worker_thread.start()
+        self.criarCanalBtn.clicked.connect(self.criarCanal)
+        self.get_thread = CanalThead(self.cliente)
 
-        # Make any cross object connections.
-        self._connectSignals()
+        self.connect(self.get_thread, QtCore.SIGNAL("updateStatus(QString)"), self.updateStatus)
 
-        self.nomeCliente.setText(self.cliente.name)
+        self.get_thread.start()
+        self.cliente.post(str('//listar').encode())
+
+    def criarCanal(self):
+        win = CriarCanal(self.cliente, self)
+        if win not in self.parentApp.parentApp.windows:
+            self.parentApp.parentApp.windows.append(win)
+            win.show()
+        elif win in self.parentApp.parentApp.windows:
+            for w in self.windows:
+                if win == w and w.isVisible():
+                    w.show()
+                    break
 
 
     def entrarCanal(self):
-        win = CanalUi.Canal(self.cliente, self)
-        win.show()
-        self.parentApp.parentApp.windows.append(win)
+        canal = self.sender().objectName().split(' ')
+        print(canal[1])
+        win = CanalUi.Canal(self.cliente,self,canal[1])
+        if win not in self.windows:
+            self.windows.append(win)
+            win.show()
+        elif win in self.windows:
+            for w in self.windows:
+                if win == w and w.isVisible():
+                    w.show()
+                    break
+        self.cliente.post(str('//entrar '+canal[1]).encode())
 
 
     def loadCanal(self,canal):
         canalWidget = QtGui.QWidget(self.scrollAreaContainer)
         canalWidget.setMinimumSize(QtCore.QSize(170, 80))
         canalWidget.setMaximumSize(QtCore.QSize(170, 80))
-        canalWidget.setObjectName(_fromUtf8("canalWidget"))
+        canalWidget.setObjectName(_fromUtf8("canalWidget"+' '+str(canal)))
 
         gridLayout_3 = QtGui.QGridLayout(canalWidget)
-        gridLayout_3.setObjectName(_fromUtf8("gridLayout_3"))
+        gridLayout_3.setObjectName(_fromUtf8("gridLayout_3"+' '+str(canal)))
 
         CanalBtn = QtGui.QPushButton(canalWidget)
-        CanalBtn.setObjectName(_fromUtf8("CanalBtn"))
+        CanalBtn.setObjectName(_fromUtf8("CanalBtn"+' '+str(canal)))
         CanalBtn.setText('Entrar')
-        CanalBtn.clicked.connect(self.worker.start)
+        CanalBtn.clicked.connect(self.entrarCanal)
         gridLayout_3.addWidget(CanalBtn, 1, 0, 1, 1)
 
         nomeCanalLabel = QtGui.QLabel(canalWidget)
-        nomeCanalLabel.setObjectName(_fromUtf8("nomeCanalLabel"))
+        nomeCanalLabel.setObjectName(_fromUtf8("nomeCanalLabel"+' '+str(canal)))
         nomeCanalLabel.setText('Canal: '+canal)
         gridLayout_3.addWidget(nomeCanalLabel, 0, 0, 1, 1)
         canalWidget.raise_()
-
         return canalWidget
 
-    @QtCore.pyqtSlot(list)
-    def updateStatus(self, lista):
+
+    def updateStatus(self, l):
+        lista = l.split(' ')
         if lista[0] == '§lista§':
             for canal in lista[1:]:
                 if canal not in self.listaCanais:
+                    print(canal)
                     self.verticalLayout.addWidget(self.loadCanal(canal))
                     self.listaCanais.append(canal)
 
 
-    def _connectSignals(self):
-        self.verticalLayout.addWidget(self.loadCanal('Teste'))
-        self.signalStatus.connect(self.updateStatus)
-        self.worker.signalStatus.connect(self.updateStatus)
 
-
-
-
-
-    def forceWorkerReset(self):
-        if self.worker_thread.isRunning():
-            self.worker_thread.terminate()
-            self.worker_thread.wait()
-
-            self.worker_thread.start()
-
-
-    def forceWorkerQuit(self):
-         if self.worker_thread.isRunning():
-            self.worker_thread.terminate()
-            self.worker_thread.wait()

@@ -1,43 +1,43 @@
-import select,sys
-from PyQt4 import QtCore
-
-class CanalThead(QtCore.QObject):
-  signalStatus = QtCore.pyqtSignal(list)
-
-  def __init__(self,cliente, parent=None):
-    self.cliente = cliente
-    super(self.__class__, self).__init__(parent)
 
 
-  def start(self):
-      print(self.cliente.name)
-      try:
-          socklist = [sys.stdin, self.cliente.socket]
-
-          post = '//listar'
-          print(post)
-          self.cliente.post(post.encode())
-          self.listar(socklist)
-
-      except Exception as e:
-          print(e)
-          self.cliente.disconnect()
-
-      except KeyboardInterrupt as e:
-          self.cliente.disconnect()
+from PyQt4.QtCore import SIGNAL, QThread
 
 
-  def listar(self,s):
-      for sock in s:
-          if sock == self.cliente.socket:
-              data = self.cliente.getData(sock)
-              if data:
+class CanalThead(QThread):
 
-                  if data.find('§lista§') > -1:
-
-                      self.isComand(data)
+      def __init__(self,cliente):
+          QThread.__init__(self)
+          self.cliente = cliente
 
 
-  @QtCore.pyqtSlot()
-  def isComand(self,data):
-      self.signalStatus.emit(data.split(' '))
+      def run(self):
+
+          try:
+              sock = self.cliente.socket
+              for i in range(1):
+                      data = self.cliente.getData(sock)
+                      if data:
+                          print(data)
+                          if data.find('§lista§')>-1:
+                              r =data
+                              self.emit(SIGNAL('updateStatus(QString)'),r)
+                          else:
+                               r = data.split(':')
+                               print(r)
+                               self.emit(SIGNAL('receber(QString,QString)'), r[1], r[0])
+
+
+
+
+
+
+
+          except Exception as e:
+              print('EE',e)
+              self.cliente.disconnect()
+
+          except KeyboardInterrupt as e:
+              self.cliente.disconnect()
+
+      def __del__(self):
+          self.wait()

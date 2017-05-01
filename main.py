@@ -1,5 +1,5 @@
 import sys
-
+import asyncio
 from View import  ListaCanais
 from PyQt4 import QtCore,QtGui
 from PyQt4.QtGui import *
@@ -27,14 +27,21 @@ class Window(QMainWindow, GUI.Ui_MainWindow):
     def login(self):
         if self.loginField.text():
             cliente = Cliente.Cliente(self.loginField.text())
-            cliente.connect()
-            win = ListaCanais.ListaCanais(cliente, self)
-            self.parentApp.windows.pop()
-            self.parentApp.windows.append(win)
-            win.show()
+            COM = False
+            loop = asyncio.get_event_loop()
+            COM = loop.run_until_complete(cliente.connect())
+            loop.close()
+            print(COM)
+            if COM:
 
-            self.close()
+                win = ListaCanais.ListaCanais(cliente, self)
+                self.parentApp.windows.pop()
+                self.parentApp.windows.append(win)
+                win.show()
 
+                self.close()
+            else:
+                self.alert('Não Foi Possivél Conectar')
         else:
             self.alert('Nome Inválido')
 
@@ -54,7 +61,9 @@ class Window(QMainWindow, GUI.Ui_MainWindow):
 
 def main():
     app = App(sys.argv)
+
     sys.exit(app.exec_())
+
 
 
 if __name__ == '__main__':

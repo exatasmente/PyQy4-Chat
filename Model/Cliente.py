@@ -1,15 +1,14 @@
 import socket, select, sys
-
+import asyncio
 
 class Cliente:
     def __init__(self, nome):
         self.host = '127.0.0.1'
-        self.port = 500
+        self.port = 7000
         self.name = nome
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.socket.settimeout(2)
 
     def prompt(self):
         sys.stdout.write('')
@@ -18,8 +17,7 @@ class Cliente:
     def getData(self, s):
         try:
             data = s.recv(4096).decode()
-            if data:
-                return data
+            return data
 
         except Exception as e:
             print(e)
@@ -27,21 +25,22 @@ class Cliente:
             pass
 
     def disconnect(self):
-        self.socket.send("|sair|".encode())
+        self.socket.send(str("|sair|").encode())
         self.socket.close()
         sys.exit()
 
-    def connect(self):
+    async def connect(self):
         try:
             self.socket.connect((self.host, self.port))
             self.socket.send(self.name.encode())
 
         except:
-            print('Não foi Possivél Conectar')
-            sys.exit()
+            return False
 
-        print('Conectado Ao Servidor')
+
+        return True
 
     def post(self, msg):
+        print(msg)
         self.socket.send(msg)
 

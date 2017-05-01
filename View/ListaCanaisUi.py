@@ -38,6 +38,9 @@ class Ui_ListaCanais(object):
         self.nomeCliente = QtGui.QLabel(self.centralwidget)
         self.nomeCliente.setObjectName(_fromUtf8("nomeCliente"))
         self.verticalLayout_2.addWidget(self.nomeCliente)
+        self.criarCanalBtn = QtGui.QPushButton(self.centralwidget)
+        self.criarCanalBtn.setObjectName(_fromUtf8("pushButton"))
+        self.verticalLayout_2.addWidget(self.criarCanalBtn)
         self.scrollArea = QtGui.QScrollArea(self.centralwidget)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -49,7 +52,7 @@ class Ui_ListaCanais(object):
         self.scrollArea.setFrameShape(QtGui.QFrame.Panel)
         self.scrollArea.setFrameShadow(QtGui.QFrame.Sunken)
         self.scrollArea.setLineWidth(0)
-        self.scrollArea.setWidgetResizable(True)
+        self.scrollArea.setWidgetResizable(False)
         self.scrollArea.setObjectName(_fromUtf8("scrollArea"))
         self.scrollAreaContainer = QtGui.QWidget()
         self.scrollAreaContainer.setGeometry(QtCore.QRect(0, 0, 187, 347))
@@ -64,5 +67,6 @@ class Ui_ListaCanais(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
+        MainWindow.setWindowTitle(_translate("Lista de Canais", "Lista de Canais", None))
         self.nomeCliente.setText(_translate("MainWindow", "Nome Cliente", None))
+        self.criarCanalBtn.setText(_translate("MainWindow", "Criar Canal", None))
