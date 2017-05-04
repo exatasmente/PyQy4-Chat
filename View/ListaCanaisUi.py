@@ -60,6 +60,9 @@ class Ui_ListaCanais(object):
         self.criarCanalBtn = QtGui.QPushButton(self.centralwidget)
         self.criarCanalBtn.setObjectName(_fromUtf8("criarCanalBtn"))
         self.verticalLayout_3.addWidget(self.criarCanalBtn)
+        self.AtualizarLista = QtGui.QPushButton(self.centralwidget)
+        self.AtualizarLista.setObjectName(_fromUtf8("AtualizarLista"))
+        self.verticalLayout_3.addWidget(self.AtualizarLista)
         self.verticalLayout_2.addLayout(self.verticalLayout_3)
         self.scrollArea = QtGui.QScrollArea(self.centralwidget)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
@@ -72,10 +75,11 @@ class Ui_ListaCanais(object):
         self.scrollArea.setFrameShape(QtGui.QFrame.Panel)
         self.scrollArea.setFrameShadow(QtGui.QFrame.Sunken)
         self.scrollArea.setLineWidth(0)
+        self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.scrollArea.setWidgetResizable(False)
         self.scrollArea.setObjectName(_fromUtf8("scrollArea"))
         self.scrollAreaContainer = QtGui.QWidget()
-        self.scrollAreaContainer.setGeometry(QtCore.QRect(0, 0, 187, 347))
+        self.scrollAreaContainer.setGeometry(QtCore.QRect(0, -47, 187, 347))
         self.scrollAreaContainer.setObjectName(_fromUtf8("scrollAreaContainer"))
         self.verticalLayout = QtGui.QVBoxLayout(self.scrollAreaContainer)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
@@ -86,7 +90,9 @@ class Ui_ListaCanais(object):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
+
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
         self.nomeCliente.setText(_translate("MainWindow", "Nome Cliente", None))
         self.criarCanalBtn.setText(_translate("MainWindow", "Criar Canal", None))
+        self.AtualizarLista.setText(_translate("MainWindow", "Atualizar Lista", None))

@@ -1,6 +1,7 @@
 from PyQt4 import QtGui,QtCore
 from time import sleep
 
+
 from View.CriarCanalUi import Ui_CriarCanal
 
 try:
@@ -26,26 +27,34 @@ class CriarCanal(QtGui.QMainWindow,Ui_CriarCanal):
         self.cliente = cliente
         super(CriarCanal, self).__init__(parent)
         self.parentApp = parentApp
+        self.criar = True
         self.setupUi(self)
         self.Criar.clicked.connect(self.criarCanal)
         self.Criar.setShortcut("Return")
-
+        self.get_thread = self.parentApp.get_thread
+        self.connect(self.get_thread, QtCore.SIGNAL("erro02(QString)"), self.alert)
+        self.canal = None
     def criarCanal(self):
         if self.NomeCanalInput.text():
-            if self.NomeCanalInput.text() not in self.parentApp.listaCanais:
                 self.cliente.post(str('//criar ' + self.NomeCanalInput.text()).encode())
-
-                self.parentApp.verticalLayout.addWidget(self.parentApp.loadCanal(self.NomeCanalInput.text()))
-                self.parentApp.listaCanais.append(self.NomeCanalInput.text())
+                self.canal = self.parentApp.loadCanal(self.NomeCanalInput.text())
+                self.parentApp.verticalLayout.addWidget(self.canal)
                 self.close()
-            else:
-                msg = QtGui.QMessageBox()
-                msg.setIcon(QtGui.QMessageBox.Warning)
-                msg.setText('Canal Já Existe ou Inválido')
-                msg.setWindowTitle("Atenção!")
-                msg.setStandardButtons(QtGui.QMessageBox.Ok)
 
-                retval = msg.exec_()
+
+    def alert(self,a):
+        self.criar = False
+        self.parentApp.verticalLayout.removeWidget(self.canal)
+        msg = QtGui.QMessageBox()
+        msg.setIcon(QtGui.QMessageBox.Warning)
+        msg.setText(a)
+        msg.setWindowTitle("Atenção!")
+        msg.setStandardButtons(QtGui.QMessageBox.Ok)
+        retval = msg.exec_()
+
+
+
+
 
 
 

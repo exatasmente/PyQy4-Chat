@@ -1,7 +1,7 @@
 
 from View.CanalView import Ui_Canal
 from PyQt4 import QtCore, QtGui
-from PyQt4.QtCore import QThreadPool
+from Controller.CanalThread import CanalThread
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
@@ -29,21 +29,43 @@ class Canal(QtGui.QMainWindow,Ui_Canal):
        self.setWindowTitle(str('Canal ' + str(self.nomeCanal)))
        self.qtMsg = 0
        self.msglist = list()
+
+       self.spacerItem = QtGui.QSpacerItem(100, 70, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+       self.verticalLayout.addItem(self.spacerItem)
+
        self.pushButton.clicked.connect(self.enviar)
        self.pushButton.setShortcut("Return")
-       self.actionSair_Canal.setShortcut("Ctrl+Q")
-       self.actionSair_Canal.triggered.connect(self.closeCanal)
 
        self.get_thread = self.parentApp.get_thread
 
-       self.connect(self.get_thread, QtCore.SIGNAL("receber(QString,QString)"), self.receber)
-       self.get_thread.start()
+       self.connect(self.get_thread, QtCore.SIGNAL("updateStatus(QString,QString)"), self.updateStatus)
+       self.connect(self.get_thread, QtCore.SIGNAL("listaUpdate(QString)"), self.listaUpdate)
+
+
+
 
     def __eq__(self, other):
-        return self.nomeCanal == other.nomeCanal
+        if type(other) == type(self):
+           return self.nomeCanal == other.nomeCanal
+        return False
 
-    def closeCanal(self):
-       self.close()
+    def closeEvent(self, event):
+
+        if self.nomeCanal == '0':
+            event.accept()
+
+
+        else:
+            msg = '//sair'
+            self.cliente.post(msg.encode())
+            self.parentApp.canalAberto = None
+            event.accept()
+
+
+
+    def listaUpdate(self,l):
+
+        self.parentApp.updateStatus(l)
 
 
     def newMsg(self, i, msg, nome= None ):
@@ -51,7 +73,15 @@ class Canal(QtGui.QMainWindow,Ui_Canal):
         MsgWidget.setMinimumSize(QtCore.QSize(401, 40))
         MsgWidget.setMaximumSize(QtCore.QSize(401, 40))
         if nome:
-            MsgWidget.setStyleSheet(_fromUtf8("QWidget{\n"
+
+            if nome == 'Sistema ':
+                MsgWidget.setStyleSheet(_fromUtf8("QWidget{\n"
+                                                  "color : #ffffff;\n"
+                                                  "border-radius: 10px;\n"
+                                                  "background: rgb(255, 56, 42);\n"
+                                                  "}"))
+            else:
+                MsgWidget.setStyleSheet(_fromUtf8("QWidget{\n"
                                                "color : #ffffff;\n"
                                                "border-radius: 10px;\n"
                                                "background: rgb(110, 110, 255);\n"
@@ -70,17 +100,18 @@ class Canal(QtGui.QMainWindow,Ui_Canal):
         horizontalLayout_11.setSizeConstraint(QtGui.QLayout.SetNoConstraint)
         horizontalLayout_11.setContentsMargins(0, 4, -1, -1)
         horizontalLayout_11.setObjectName(_fromUtf8("horizontalLayout_11"))
+        if nome:
+            clienteNome = QtGui.QLabel(MsgWidget)
+            clienteNome.setObjectName(_fromUtf8("clienteNome"))
+            clienteNome.setText(nome)
+            horizontalLayout_11.addWidget(clienteNome)
 
         mensagem = QtGui.QLabel(MsgWidget)
         mensagem.setObjectName(_fromUtf8("Mensagem"))
         mensagem.setText(msg)
         horizontalLayout_11.addWidget(mensagem)
 
-        if nome:
-            clienteNome = QtGui.QLabel(MsgWidget)
-            clienteNome.setObjectName(_fromUtf8("clienteNome"))
-            clienteNome.setText(nome)
-            horizontalLayout_11.addWidget(clienteNome)
+
 
 
 
@@ -88,180 +119,31 @@ class Canal(QtGui.QMainWindow,Ui_Canal):
         return MsgWidget
 
     def enviar(self):
+
+        self.verticalLayout.removeItem(self.spacerItem)
+        self.scrollArea.verticalScrollBar().setValue(self.scrollArea.verticalScrollBar().maximum())
+
         self.qtMsg += 1
         self.verticalLayout.addWidget(self.newMsg(self.qtMsg,self.textEdit.text()))
-        self.cliente.post(self.textEdit.text().encode())
+
+        self.verticalLayout.addItem(self.spacerItem)
+
+        self.cliente.post(str(self.textEdit.text()+"\n").encode())
         self.textEdit.clear()
         self.scrollArea.verticalScrollBar().setValue(self.scrollArea.verticalScrollBar().maximum())
 
     def receber(self,nome,msg):
+        self.verticalLayout.removeItem(self.spacerItem)
+        self.scrollArea.verticalScrollBar().setValue(self.scrollArea.verticalScrollBar().maximum())
+
         self.qtMsg += 1
-        self.verticalLayout.addWidget(self.newMsg(self.qtMsg,msg, nome))
+        self.verticalLayout.addWidget(self.newMsg(self.qtMsg,msg,nome))
+        self.verticalLayout.addItem(self.spacerItem)
         self.scrollArea.verticalScrollBar().setValue(self.scrollArea.verticalScrollBar().maximum())
 
     def getData(self):
         self.cliente.getData()
 
 
-    def updateStatus(self, lista):
-        self.receber(lista[0],lista[1])
-
-
-
-    def getbrush(self,palette,Out=False):
-        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.WindowText, brush)
-        if Out:
-            brush = QtGui.QBrush(QtGui.QColor(110, 110, 255))
-        else:
-            brush = QtGui.QBrush(QtGui.QColor(85, 0, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Button, brush)
-        brush = QtGui.QBrush(QtGui.QColor(170, 127, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Light, brush)
-        brush = QtGui.QBrush(QtGui.QColor(127, 63, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Midlight, brush)
-        brush = QtGui.QBrush(QtGui.QColor(42, 0, 127))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Dark, brush)
-        brush = QtGui.QBrush(QtGui.QColor(56, 0, 170))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Mid, brush)
-        brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Text, brush)
-        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.BrightText, brush)
-        brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.ButtonText, brush)
-        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Base, brush)
-        if Out:
-            brush = QtGui.QBrush(QtGui.QColor(110, 110, 255))
-        else:
-            brush = QtGui.QBrush(QtGui.QColor(85, 0, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Window, brush)
-        brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Shadow, brush)
-        brush = QtGui.QBrush(QtGui.QColor(170, 127, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.AlternateBase, brush)
-        brush = QtGui.QBrush(QtGui.QColor(255, 255, 220))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.ToolTipBase, brush)
-        brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.ToolTipText, brush)
-        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.WindowText, brush)
-        if Out:
-            brush = QtGui.QBrush(QtGui.QColor(110, 110, 255))
-        else:
-            brush = QtGui.QBrush(QtGui.QColor(85, 0, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Button, brush)
-        brush = QtGui.QBrush(QtGui.QColor(170, 127, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Light, brush)
-        brush = QtGui.QBrush(QtGui.QColor(127, 63, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Midlight, brush)
-        brush = QtGui.QBrush(QtGui.QColor(42, 0, 127))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Dark, brush)
-        brush = QtGui.QBrush(QtGui.QColor(56, 0, 170))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Mid, brush)
-        brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Text, brush)
-        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.BrightText, brush)
-        brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.ButtonText, brush)
-        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Base, brush)
-        if Out:
-            brush = QtGui.QBrush(QtGui.QColor(110, 110, 255))
-        else:
-            brush = QtGui.QBrush(QtGui.QColor(85, 0, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Window, brush)
-        brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Shadow, brush)
-        brush = QtGui.QBrush(QtGui.QColor(170, 127, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.AlternateBase, brush)
-        brush = QtGui.QBrush(QtGui.QColor(255, 255, 220))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.ToolTipBase, brush)
-        brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.ToolTipText, brush)
-        brush = QtGui.QBrush(QtGui.QColor(42, 0, 127))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.WindowText, brush)
-        if Out:
-            brush = QtGui.QBrush(QtGui.QColor(110, 110, 255))
-        else:
-            brush = QtGui.QBrush(QtGui.QColor(85, 0, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Button, brush)
-        brush = QtGui.QBrush(QtGui.QColor(170, 127, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Light, brush)
-        brush = QtGui.QBrush(QtGui.QColor(127, 63, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Midlight, brush)
-        brush = QtGui.QBrush(QtGui.QColor(42, 0, 127))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Dark, brush)
-        brush = QtGui.QBrush(QtGui.QColor(56, 0, 170))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Mid, brush)
-        brush = QtGui.QBrush(QtGui.QColor(42, 0, 127))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Text, brush)
-        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.BrightText, brush)
-        brush = QtGui.QBrush(QtGui.QColor(42, 0, 127))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.ButtonText, brush)
-        if Out:
-            brush = QtGui.QBrush(QtGui.QColor(110, 110, 255))
-        else:
-            brush = QtGui.QBrush(QtGui.QColor(85, 0, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Base, brush)
-        if Out:
-            brush = QtGui.QBrush(QtGui.QColor(110, 110, 255))
-        else:
-            brush = QtGui.QBrush(QtGui.QColor(85, 0, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Window, brush)
-        brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Shadow, brush)
-        brush = QtGui.QBrush(QtGui.QColor(110, 110, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.AlternateBase, brush)
-        brush = QtGui.QBrush(QtGui.QColor(255, 255, 220))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.ToolTipBase, brush)
-        brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        return brush
+    def updateStatus(self, nome,msg):
+        self.receber(nome,msg)

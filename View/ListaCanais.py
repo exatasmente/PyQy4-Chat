@@ -2,14 +2,11 @@ import asyncio
 from PyQt4 import QtGui, QtCore
 
 
-from PyQt4.QtCore import QThreadPool
 
-
-from Controller import  CanalThread
-from Controller.CanalThread import CanalThead
 from View import CanalUi
 from View.CriarCanal import CriarCanal
 from View.ListaCanaisUi import Ui_ListaCanais
+from Controller.CanalThread import CanalThread
 
 
 try:
@@ -41,39 +38,41 @@ class ListaCanais(QtGui.QMainWindow,Ui_ListaCanais):
         self.parentApp = parentApp
         self.windows = list()
         self.setupUi(self)
-
+        self.nomeCliente.setText(self.cliente.name)
         self.criarCanalBtn.clicked.connect(self.criarCanal)
-        self.get_thread = CanalThead(self.cliente)
+        self.cliente.post(str("//listar").encode())
+        self.updateStatus(self.cliente.getData())
+        self.canalAberto =None
+        self.get_thread = CanalThread(self.cliente)
 
-        self.connect(self.get_thread, QtCore.SIGNAL("updateStatus(QString)"), self.updateStatus)
 
         self.get_thread.start()
-        self.cliente.post(str('//listar').encode())
+
+
+
 
     def criarCanal(self):
         win = CriarCanal(self.cliente, self)
-        if win not in self.parentApp.parentApp.windows:
-            self.parentApp.parentApp.windows.append(win)
-            win.show()
-        elif win in self.parentApp.parentApp.windows:
-            for w in self.windows:
-                if win == w and w.isVisible():
-                    w.show()
-                    break
+        if self.canalAberto:
+            self.canalAberto.close()
+            self.canalAberto = win
+            self.canalAberto.show()
+        else:
+            self.canalAberto = win
+            self.canalAberto.show()
 
 
     def entrarCanal(self):
         canal = self.sender().objectName().split(' ')
-        print(canal[1])
-        win = CanalUi.Canal(self.cliente,self,canal[1])
-        if win not in self.windows:
-            self.windows.append(win)
-            win.show()
-        elif win in self.windows:
-            for w in self.windows:
-                if win == w and w.isVisible():
-                    w.show()
-                    break
+
+        win = CanalUi.Canal(self.cliente,self,str(canal[1]))
+        if self.canalAberto:
+            self.canalAberto.close()
+            self.canalAberto = win
+            self.canalAberto.show()
+        else:
+            self.canalAberto = win
+            self.canalAberto.show()
         self.cliente.post(str('//entrar '+canal[1]).encode())
 
 
@@ -100,14 +99,16 @@ class ListaCanais(QtGui.QMainWindow,Ui_ListaCanais):
         return canalWidget
 
 
-    def updateStatus(self, l):
+    def updateStatus(self,l):
+
         lista = l.split(' ')
         if lista[0] == '§lista§':
             for canal in lista[1:]:
                 if canal not in self.listaCanais:
-                    print(canal)
-                    self.verticalLayout.addWidget(self.loadCanal(canal))
-                    self.listaCanais.append(canal)
+                    if canal != "\n":
+
+                        self.verticalLayout.addWidget(self.loadCanal(canal))
+                        self.listaCanais.append(canal)
 
 
 
